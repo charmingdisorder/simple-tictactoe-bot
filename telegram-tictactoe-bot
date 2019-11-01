@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+# -*- mode: Python; python-indent-offset: 4; python-guess-indent: nil
+
+"""
+Telegram tic-tac-toe bot game launcher
+"""
+
+import sys
+import os
+import logging
+
+# XXX
+#logging.basicConfig(level=logging.DEBUG,
+#                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+from amtttbot.process import ATBGameProcess
+
+LOG_FILE = "am_tictactoe.log"
+PID_FILE = "am_tictactoe.pid"
+TOKEN_FILENAME = "token"
+TOKEN_ENV = "TICTACTOE_TOKEN"
+DEBUG = 1
+
+def main(argv):
+    token = os.getenv(TOKEN_ENV)
+    daemon = 0
+
+    if not token:
+        try:
+            f = open(TOKEN_FILENAME)
+            token = f.read().replace('\n','')
+            f.close()
+        except Exception as e:
+            print(e)
+            import getpass
+            token = getpass.getpass('Enter token: ')
+
+#    if len(argv) > 1 : daemon = 0
+
+    setup_logging(daemon, LOG_FILE)
+
+    process = ATBGameProcess(PID_FILE, token)
+
+#   if daemon > 0:
+#       process.start()
+#       sys.exit(0)
+#   else:
+    process.run()
+
+def setup_logging(daemon, log_file_path):
+#    if daemon:
+#        handler = logging.FileHandler(log_file_path)
+#    else:
+    handler = logging.StreamHandler()
+
+    handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+    logger = logging.getLogger('tictactoe')
+
+    if DEBUG: logger.setLevel(logging.DEBUG)
+    else: logger.setLevel(logging.INFO)
+
+    logger.addHandler(handler)
+
+if __name__ == '__main__':
+    main(sys.argv)
